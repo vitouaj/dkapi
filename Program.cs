@@ -75,7 +75,7 @@ app.MapGet("/computer", async (DkdbContext db) =>
 {
     return await db.Computers.ToArrayAsync();
 })
-// .RequireAuthorization()
+.RequireAuthorization()
 .WithOpenApi();
 
 // post a computer
@@ -88,7 +88,7 @@ app.MapPost("/computer", async (DkdbContext db, Computer pc) =>
     await db.SaveChangesAsync();
     return $"pc id: {pc.id}";
 })
-// .RequireAuthorization()
+.RequireAuthorization()
 .WithOpenApi();
 
 // get computer by id
@@ -101,7 +101,7 @@ app.MapGet("/computer/{computerId}", async (string computerId, DkdbContext db) =
     var pc = await db.Computers.SingleOrDefaultAsync(c => c.id == new Guid(computerId));
     return pc;
 })
-// .RequireAuthorization()
+.RequireAuthorization()
 .WithOpenApi();
 
 
