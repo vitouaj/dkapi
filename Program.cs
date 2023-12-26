@@ -2,15 +2,23 @@ using dkapi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
-var dir = Directory.GetCurrentDirectory();
-var DbPath = Path.Join(dir, "dkapi.db");
-Console.WriteLine($"DbPath: {DbPath}");
-
 // add dbcontext
-builder.Services.AddDbContext<DkdbContext>(
-    options => options.UseSqlite($"Data Source={DbPath}"));
+// builder.Services.AddDbContext<DkdbContext>(
+//     options => options.UseSqlite($"Data Source={DbPath}"));
+var DB_CONNECTION = Environment.GetEnvironmentVariable("DB_CONNECTION");
+
+
+// var connectionString = builder.Configuration.GetConnectionString("Postgres");
+
+builder.Services.AddDbContext<DkdbContext>(options =>
+{
+    options.UseNpgsql(DB_CONNECTION);
+});
+
+
 
 builder.Services.AddIdentityApiEndpoints<DkUser>()
     .AddEntityFrameworkStores<DkdbContext>();
@@ -53,6 +61,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbctservice = scope.ServiceProvider.GetService<DkdbContext>();
+        ApplyMigrations(dbctservice);
+    }
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -75,7 +88,6 @@ app.MapGet("/computer", async (DkdbContext db) =>
 {
     return await db.Computers.ToArrayAsync();
 })
-.RequireAuthorization()
 .WithOpenApi();
 
 // post a computer
@@ -86,19 +98,19 @@ app.MapPost("/computer", async (DkdbContext db, Computer pc) =>
 
     await db.Computers.AddAsync(pc);
     await db.SaveChangesAsync();
-    return $"pc id: {pc.id}";
+    return $"pc id: {pc.Id}";
 })
 .RequireAuthorization()
 .WithOpenApi();
 
-// get computer by id
+// get computer by Id
 app.MapGet("/computer/{computerId}", async (string computerId, DkdbContext db) =>
 {
     if (computerId == null)
     {
         return null;
     }
-    var pc = await db.Computers.SingleOrDefaultAsync(c => c.id == new Guid(computerId));
+    var pc = await db.Computers.SingleOrDefaultAsync(c => c.Id == new Guid(computerId));
     return pc;
 })
 .RequireAuthorization()
@@ -106,3 +118,12 @@ app.MapGet("/computer/{computerId}", async (string computerId, DkdbContext db) =
 
 
 app.Run();
+
+
+void ApplyMigrations(DkdbContext context)
+{
+    if (context.Database.GetPendingMigrations().Any())
+    {
+        context.Database.Migrate();
+    }
+}

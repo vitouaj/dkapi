@@ -7,7 +7,7 @@ namespace dkapi;
 public class Computer
 {
     [Key]
-    public Guid id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string brandName { get; set; } = string.Empty;
     public string model { get; set; } = string.Empty;
     public float price { get; set; }

@@ -13,6 +13,11 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
         base.OnModelCreating(builder);
 
         builder.Entity<Computer>()
-            .HasKey(c => c.id);
+            .HasKey(c => c.Id);
+
+        builder.Entity<Computer>()
+            .Property(c => c.Id)
+            .HasColumnType("uuid");
+
     }
 }

@@ -1,6 +1,6 @@
-@dkapi_HostAddress = http://localhost:5007
+@dkapi_HostAddress = http://localhost:8080
 
-GET {{dkapi_HostAddress}}/weatherforecast/
+GET {{dkapi_HostAddress}}/computer/
 Accept: application/json
 
 ###
