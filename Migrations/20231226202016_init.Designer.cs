@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using dkapi;
+using dkapi.Data;
 
 #nullable disable
 
@@ -13,7 +14,7 @@ namespace dkapi.Migrations
 {
     [DbContext(typeof(DkdbContext))]
     [Migration("20231226202016_init")]
-    partial class init
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

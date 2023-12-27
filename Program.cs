@@ -1,4 +1,6 @@
 using dkapi;
+using dkapi.Data;
+using dkapi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -17,7 +19,9 @@ var DB_HOST = Environment.GetEnvironmentVariable("DB_HOST");
 var DB_PORT = Environment.GetEnvironmentVariable("DB_PORT");
 var DB_NAME = Environment.GetEnvironmentVariable("DB_NAME");
 
+#pragma warning disable CS8601 // Possible null reference assignment.
 builder.Environment.EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+#pragma warning restore CS8601 // Possible null reference assignment.
 
 var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}";
 
@@ -72,7 +76,9 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetService<DkdbContext>();
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         db.Database.Migrate();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
     }
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -126,12 +132,3 @@ app.MapGet("/computer/{computerId}", async (string computerId, DkdbContext db) =
 
 
 app.Run();
-
-
-void ApplyMigrations(DkdbContext context)
-{
-    if (context.Database.GetPendingMigrations().Any())
-    {
-        context.Database.Migrate();
-    }
-}

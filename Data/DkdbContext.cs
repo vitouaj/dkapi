@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using dkapi.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace dkapi;
+
+namespace dkapi.Data;
 
 class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkUser>(options)
 {
