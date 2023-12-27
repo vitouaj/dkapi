@@ -26,8 +26,12 @@ services:
         condition: service_healthy
 
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      DB_CONNECTION: Host=${DB_HOST}; Port=${DB_PORT}; Database=${DB_NAME}; User ID=${DB_USER}; Password=${DB_PASS};
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
 
     networks:
       - mynet

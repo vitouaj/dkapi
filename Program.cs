@@ -5,17 +5,25 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// add dbcontext
-// builder.Services.AddDbContext<DkdbContext>(
-//     options => options.UseSqlite($"Data Source={DbPath}"));
-var DB_CONNECTION = Environment.GetEnvironmentVariable("DB_CONNECTION");
+var rootDir = Directory.GetCurrentDirectory();
+var dotenv = Path.Combine(rootDir, ".env");
+DotEnvParser.Load(dotenv);
 
+builder.Configuration.AddEnvironmentVariables();
 
-// var connectionString = builder.Configuration.GetConnectionString("Postgres");
+var DB_USER = Environment.GetEnvironmentVariable("DB_USER");
+var DB_PASS = Environment.GetEnvironmentVariable("DB_PASS");
+var DB_HOST = Environment.GetEnvironmentVariable("DB_HOST");
+var DB_PORT = Environment.GetEnvironmentVariable("DB_PORT");
+var DB_NAME = Environment.GetEnvironmentVariable("DB_NAME");
+
+builder.Environment.EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}";
 
 builder.Services.AddDbContext<DkdbContext>(options =>
 {
-    options.UseNpgsql(DB_CONNECTION);
+    options.UseNpgsql(connectionString);
 });
 
 
@@ -39,7 +47,6 @@ builder.Services.AddSwaggerGen(opt =>
         BearerFormat = "JWT",
         Scheme = "bearer"
     });
-
     opt.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -58,13 +65,14 @@ builder.Services.AddSwaggerGen(opt =>
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
     {
-        var dbctservice = scope.ServiceProvider.GetService<DkdbContext>();
-        ApplyMigrations(dbctservice);
+        var db = scope.ServiceProvider.GetService<DkdbContext>();
+        db.Database.Migrate();
     }
     app.UseSwagger();
     app.UseSwaggerUI();
