@@ -222,7 +222,7 @@ namespace dkapi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Discount");
+                    b.ToTable("Discounts");
                 });
 
             modelBuilder.Entity("dkapi.Models.DkUser", b =>
@@ -273,6 +273,12 @@ namespace dkapi.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -291,8 +297,8 @@ namespace dkapi.Migrations
 
             modelBuilder.Entity("dkapi.Models.OrderDetail", b =>
                 {
-                    b.Property<string>("OrderId")
-                        .HasColumnType("text");
+                    b.Property<int>("OrdersId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
@@ -300,7 +306,11 @@ namespace dkapi.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("integer");
 
-                    b.HasKey("OrderId", "ProductId");
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("OrdersId", "ProductId");
 
                     b.HasIndex("ProductId");
 
@@ -326,7 +336,9 @@ namespace dkapi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp");
 
                     b.Property<int>("DiscountId")
                         .HasColumnType("integer");
@@ -342,7 +354,9 @@ namespace dkapi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp");
 
                     b.Property<int>("View")
                         .HasColumnType("integer");
@@ -354,7 +368,7 @@ namespace dkapi.Migrations
                     b.HasIndex("DiscountId")
                         .IsUnique();
 
-                    b.ToTable("Product");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("dkapi.Models.ProductPicture", b =>
@@ -375,7 +389,7 @@ namespace dkapi.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductPicture");
+                    b.ToTable("ProductPictures");
                 });
 
             modelBuilder.Entity("dkapi.Models.ShippingStatus", b =>
@@ -392,19 +406,24 @@ namespace dkapi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ShippingStatus");
+                    b.ToTable("ShippingStatuses");
                 });
 
             modelBuilder.Entity("dkapi.Order", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp");
 
                     b.Property<int>("ShippingStatusId")
                         .HasColumnType("integer");
@@ -413,7 +432,9 @@ namespace dkapi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("current_timestamp");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -426,7 +447,7 @@ namespace dkapi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Order");
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -484,7 +505,7 @@ namespace dkapi.Migrations
                 {
                     b.HasOne("dkapi.Order", null)
                         .WithMany()
-                        .HasForeignKey("OrderId")
+                        .HasForeignKey("OrdersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

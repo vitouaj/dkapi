@@ -6,7 +6,7 @@ services:
     # secrets:
     #   - db-password
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - devdb-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_PASSWORD: ${DB_PASS}
@@ -37,6 +37,6 @@ services:
       - devnet
 
 volumes:
-  db-data:
+  devdb-data:
 networks:
   devnet:
