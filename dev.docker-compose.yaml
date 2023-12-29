@@ -1,0 +1,42 @@
+services:
+  devdb:
+    image: postgres
+    restart: always
+    user: ${DB_USER}
+    # secrets:
+    #   - db-password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      # - POSTGRES_USER=postgres
+      # - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    # expose:
+    #   - 5432
+    ports:
+      - 5500:5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devnet
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dev.com
+      PGADMIN_DEFAULT_PASSWORD: dev
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8009:80"
+    networks:
+      - devnet
+
+volumes:
+  db-data:
+networks:
+  devnet:
