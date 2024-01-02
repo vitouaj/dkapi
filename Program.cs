@@ -1,6 +1,7 @@
 using dkapi;
 using dkapi.Data;
 using dkapi.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -23,7 +24,7 @@ var DB_NAME = Environment.GetEnvironmentVariable("DB_NAME");
 builder.Environment.EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 #pragma warning restore CS8601 // Possible null reference assignment.
 
-var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}";
+var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}; Include Error Detail=true";
 
 builder.Services.AddDbContext<DkdbContext>(options =>
 {
@@ -31,6 +32,8 @@ builder.Services.AddDbContext<DkdbContext>(options =>
 });
 
 
+
+builder.Services.AddDbContext<DkdbContext>();
 
 builder.Services.AddIdentityApiEndpoints<DkUser>()
     .AddEntityFrameworkStores<DkdbContext>();
@@ -76,59 +79,37 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetService<DkdbContext>();
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
         db.Database.Migrate();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        
+        var categories = new List<Category>(){
+        new Category{Name="gaming"},
+        new Category{Name="office"}
+        };
+
+        await db.Categories.AddRangeAsync(categories);
+
+        var discounts = new List<Discount>(){
+            new Discount{Name = "happy new year", Percentage=30},
+            new Discount{Name="lunar new year", Percentage=50}
+        };
+
+        await db.Discounts.AddRangeAsync(discounts);
+        
+        await db.SaveChangesAsync();
     }
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+
+
 app.UseHttpsRedirection();
 app.MapIdentityApi<DkUser>();
 app.UseAuthorization();
 
-
-app.MapGet("/homepage", () =>
-{
-    return "this is homepage";
-})
-.RequireAuthorization()
-.WithOpenApi();
-
-
-// get all computers
-app.MapGet("/computer", async (DkdbContext db) =>
-{
-    return await db.Computers.ToArrayAsync();
-})
-.WithOpenApi();
-
-// post a computer
-app.MapPost("/computer", async (DkdbContext db, Computer pc) =>
-{
-    if (pc == null)
-        return "pc is null";
-
-    await db.Computers.AddAsync(pc);
-    await db.SaveChangesAsync();
-    return $"pc id: {pc.Id}";
-})
-.RequireAuthorization()
-.WithOpenApi();
-
-// get computer by Id
-app.MapGet("/computer/{computerId}", async (string computerId, DkdbContext db) =>
-{
-    if (computerId == null)
-    {
-        return null;
-    }
-    var pc = await db.Computers.SingleOrDefaultAsync(c => c.Id == new Guid(computerId));
-    return pc;
-})
-.RequireAuthorization()
-.WithOpenApi();
+ComputerEnpoints.Map(app);
+ProductEnpoints.Map(app);
+OrderEnpoint.Map(app);
 
 
 app.Run();
