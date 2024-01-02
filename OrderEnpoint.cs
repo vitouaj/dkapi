@@ -3,6 +3,7 @@ using dkapi.Models;
 using dkapi.Models.Dto;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Npgsql.Replication;
@@ -15,12 +16,28 @@ public class OrderEnpoint
     {
         app.MapPost("/order", async (DkdbContext db, OrderDto orderRequest, UserManager<DkUser> userManager) =>
         {
+            CreateOrderResponse json;
             if (orderRequest == null || string.IsNullOrEmpty(orderRequest.UserId))
-                return Results.BadRequest();
-
+            {
+                json = new CreateOrderResponse
+                {
+                    Success = false,
+                    Error = true,
+                    Message = $"Order created failed ;-;",
+                };
+                return JsonParser.Parse(json);
+            }
             var user = await userManager.FindByIdAsync(orderRequest.UserId);
             if (user == null)
-                return Results.BadRequest();
+            {
+                json = new CreateOrderResponse
+                {
+                    Success = false,
+                    Error = true,
+                    Message = $"Order created failed. can't find user id;-;",
+                };
+                return JsonParser.Parse(json);
+            }
 
             var newOrder = new Order
             {
@@ -36,6 +53,7 @@ public class OrderEnpoint
                     Order = newOrder,
                     OrderId = newOrder.Id,
                     ProductId = e.ProductId,
+                    Product = db.Products.FirstOrDefault(i => i.Id == e.ProductId),
                     Amount = e.Amount,
                 }).ToList();
 
@@ -44,7 +62,39 @@ public class OrderEnpoint
             await db.Orders.AddAsync(newOrder);
             await db.SaveChangesAsync();
 
-            return Results.Created();
+            var orderResponse = new OrderResponse
+            {
+                UserId = newOrder.UserId,
+                OrderId = newOrder.Id,
+                OrderDate = newOrder.CreatedDate,
+            };
+
+            var _orderDetailResponses = newOrder.OrderDetails
+                .Select(e => new OrderDetailResponse
+                {
+                    ProductName = e.Product?.Brand,
+                    UnitPrice = e.Product?.Price ?? 0, // Assuming a default value if Price is null
+                    Amount = e.Amount,
+                    TotalOfUnitPrice = (e.Product?.Price ?? 0) * e.Amount,
+                }).ToList();
+
+            orderResponse.OrderDetailResponses = _orderDetailResponses;
+            double total = 0;
+            foreach (var o in _orderDetailResponses)
+            {
+                total += o.TotalOfUnitPrice;
+            }
+            orderResponse.TotalCost = total;
+
+            var cor = new CreateOrderResponse
+            {
+                Success = true,
+                Error = false,
+                Message = $"Order created successfully: {newOrder.Id}",
+                Payload = orderResponse
+            };
+
+            return JsonParser.Parse(cor);
         });
 
         app.MapGet("/order/detail", async (DkdbContext db, string userId) =>
@@ -112,18 +162,5 @@ public class OrderEnpoint
 
             return json;
         });
-
-
-        static async Task<List<Product>> GetProductsByIds(List<int> ids, DkdbContext db)
-        {
-            List<Product> result = [];
-            foreach (var id in ids)
-            {
-                var prod = await db.Products.Where(e => e.Id == id).FirstOrDefaultAsync();
-                if (prod != null)
-                    result.Add(prod);
-            }
-            return result;
-        }
     }
 }

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace dkapi.Migrations
 {
     /// <inheritdoc />
-    public partial class InitSchema : Migration
+    public partial class InitSchema3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -1,7 +1,6 @@
 using dkapi;
 using dkapi.Data;
 using dkapi.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -20,9 +19,7 @@ var DB_HOST = Environment.GetEnvironmentVariable("DB_HOST");
 var DB_PORT = Environment.GetEnvironmentVariable("DB_PORT");
 var DB_NAME = Environment.GetEnvironmentVariable("DB_NAME");
 
-#pragma warning disable CS8601 // Possible null reference assignment.
 builder.Environment.EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-#pragma warning restore CS8601 // Possible null reference assignment.
 
 var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}; Include Error Detail=true";
 
@@ -31,9 +28,6 @@ builder.Services.AddDbContext<DkdbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-
-
-builder.Services.AddDbContext<DkdbContext>();
 
 builder.Services.AddIdentityApiEndpoints<DkUser>()
     .AddEntityFrameworkStores<DkdbContext>();
@@ -76,26 +70,17 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    using (var scope = app.Services.CreateScope())
+    using var scope = app.Services.CreateScope();
+
+    var db = scope.ServiceProvider.GetService<DkdbContext>();
+    db.Database.Migrate();
+
+    if (!db.Categories.Any() && !db.ShippingStatuses.Any() && !db.Products.Any() && !db.Discounts.Any())
     {
-        var db = scope.ServiceProvider.GetService<DkdbContext>();
-        db.Database.Migrate();
-        
-        var categories = new List<Category>(){
-        new Category{Name="gaming"},
-        new Category{Name="office"}
-        };
-
-        await db.Categories.AddRangeAsync(categories);
-
-        var discounts = new List<Discount>(){
-            new Discount{Name = "happy new year", Percentage=30},
-            new Discount{Name="lunar new year", Percentage=50}
-        };
-
-        await db.Discounts.AddRangeAsync(discounts);
-        
-        await db.SaveChangesAsync();
+        SeedData.SeedCategories(app);
+        SeedData.SeedShippingStatus(app);
+        SeedData.SeedDiscount(app);
+        SeedData.SeedProduct(app);
     }
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -110,6 +95,5 @@ app.UseAuthorization();
 ComputerEnpoints.Map(app);
 ProductEnpoints.Map(app);
 OrderEnpoint.Map(app);
-
 
 app.Run();
