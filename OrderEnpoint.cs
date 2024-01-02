@@ -124,33 +124,22 @@ public class OrderEnpoint
                 .Where(o => o.UserId == userId)
                 .Select(o => new
                 {
-                    UserId = o.UserId,
+                    o.UserId,
+                    OrderId = o.Id,
+                    o.CreatedDate,
                     Products = o.OrderDetails.Select(od => new
                     {
                         od.Product.Brand,
                         od.Product.Model,
                         od.Product.Price,
-                        Detial = o.OrderDetails
+                        Amount = o.OrderDetails
                             .Where(e => e.OrderId == od.OrderId)
-                            .Select(e => new
-                            {
-                                e.OrderId,
-                                e.Amount
-                            })
+                            .Select(e => e.Amount)
                             .FirstOrDefault()
                     }
                     ).ToList(),
                 })
                 .ToListAsync();
-
-            // var result = db.Orders
-            //     .Where(e => e.UserId == userId)
-            //     .Include(e => e.OrderDetails)
-            //     .Select(e => new {
-            //         e.UserId,
-            //         e.OrderDetails
-            //     }).ToList();
-
 
             var jsonOptions = new JsonSerializerSettings
             {
