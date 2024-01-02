@@ -1,16 +1,16 @@
-﻿namespace dkapi;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace dkapi;
 
 public class ProductDto
 {
-    public int Id { get; set; }
+    [Required]
     public string Brand {get; set;} = string.Empty;
+    [Required]
     public string Model {get; set;} = string.Empty;
+    [Required]
     public float Price {get; set;}
-    public int View {get; set;}
     public int CategoryId {get; set;}
     public int DiscountId {get; set;}
-    public DateTime CreatedDate {get; set;}
-    public DateTime UpdatedDate {get; set;}
     public string? CreatedBy {get; set;}
-    public string? UpdatedBy {get; set;}
 }

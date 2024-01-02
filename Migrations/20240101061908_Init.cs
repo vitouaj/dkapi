@@ -54,7 +54,7 @@ namespace dkapi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Category",
+                name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -63,7 +63,7 @@ namespace dkapi.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Category", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -225,7 +225,7 @@ namespace dkapi.Migrations
                     Brand = table.Column<string>(type: "text", nullable: false),
                     Model = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<float>(type: "real", nullable: false),
-                    View = table.Column<int>(type: "integer", nullable: false),
+                    View = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
                     DiscountId = table.Column<int>(type: "integer", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "current_timestamp"),
@@ -237,9 +237,9 @@ namespace dkapi.Migrations
                 {
                     table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Products_Category_CategoryId",
+                        name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
-                        principalTable: "Category",
+                        principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -257,7 +257,7 @@ namespace dkapi.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<string>(type: "text", nullable: false),
-                    ShippingStatusId = table.Column<int>(type: "integer", nullable: false),
+                    ShippingStatusId = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "current_timestamp"),
                     UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "current_timestamp"),
                     CreatedBy = table.Column<string>(type: "text", nullable: true),
@@ -301,25 +301,24 @@ namespace dkapi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderDetail",
+                name: "OrderDetails",
                 columns: table => new
                 {
                     ProductId = table.Column<int>(type: "integer", nullable: false),
-                    OrdersId = table.Column<int>(type: "integer", nullable: false),
-                    OrderId = table.Column<string>(type: "text", nullable: false),
-                    Amount = table.Column<int>(type: "integer", nullable: false)
+                    OrderId = table.Column<int>(type: "integer", nullable: false),
+                    Amount = table.Column<int>(type: "integer", nullable: false, defaultValue: 1)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderDetail", x => new { x.OrdersId, x.ProductId });
+                    table.PrimaryKey("PK_OrderDetails", x => new { x.OrderId, x.ProductId });
                     table.ForeignKey(
-                        name: "FK_OrderDetail_Orders_OrdersId",
-                        column: x => x.OrdersId,
+                        name: "FK_OrderDetails_Orders_OrderId",
+                        column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderDetail_Products_ProductId",
+                        name: "FK_OrderDetails_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -364,15 +363,14 @@ namespace dkapi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderDetail_ProductId",
-                table: "OrderDetail",
+                name: "IX_OrderDetails_ProductId",
+                table: "OrderDetails",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_ShippingStatusId",
                 table: "Orders",
-                column: "ShippingStatusId",
-                unique: true);
+                column: "ShippingStatusId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
@@ -392,8 +390,7 @@ namespace dkapi.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Products_DiscountId",
                 table: "Products",
-                column: "DiscountId",
-                unique: true);
+                column: "DiscountId");
         }
 
         /// <inheritdoc />
@@ -418,7 +415,7 @@ namespace dkapi.Migrations
                 name: "Computers");
 
             migrationBuilder.DropTable(
-                name: "OrderDetail");
+                name: "OrderDetails");
 
             migrationBuilder.DropTable(
                 name: "ProductPictures");
@@ -439,7 +436,7 @@ namespace dkapi.Migrations
                 name: "ShippingStatuses");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Discounts");

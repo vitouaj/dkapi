@@ -14,9 +14,4 @@ public class DkUser : IdentityUser
     public int EmailConfirmed { get; set; }
     public ICollection<Order> Orders { get; set; } = new List<Order>();
 }
-
-
-
-
-
 #pragma warning restore CS0114 // Member hides inherited member; missing override keyword

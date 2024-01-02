@@ -9,5 +9,5 @@ public class ShippingStatus
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
     public string Status { get; set; } = string.Empty;
-    public Order Order {get; set;} = null!;
+    public ICollection<Order> Orders {get; set;} = new List<Order>();
 }

@@ -1,6 +1,7 @@
 ﻿using dkapi.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Extensions;
 using SQLitePCL;
 
 
@@ -10,12 +11,13 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
 {
     public DbSet<Computer> Computers { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Category> Categories { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Discount> Discounts { get; set; }
     public DbSet<ShippingStatus> ShippingStatuses { get; set; }
     public DbSet<ProductPicture> ProductPictures { get; set; }
-
     public DbSet<DkUser> DkUsers { get; set; }
+    public DbSet<OrderDetail> OrderDetails { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -38,8 +40,11 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
 
 
         builder.Entity<Product>()
-            .HasOne<Discount>()
-            .WithOne();
+            .HasOne(e => e.Discount)
+            .WithMany(e => e.Products)
+            .HasForeignKey(e => e.DiscountId)
+            .IsRequired();
+
 
         builder.Entity<Product>()
             .Property(e => e.CreatedDate)
@@ -47,6 +52,10 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
         builder.Entity<Product>()
             .Property(e => e.UpdatedDate)
             .HasDefaultValueSql("current_timestamp");
+        builder.Entity<Product>()
+            .Property(e => e.View)
+            .HasDefaultValue(1);
+
 
         builder.Entity<Order>()
            .Property(e => e.CreatedDate)
@@ -54,7 +63,9 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
         builder.Entity<Order>()
             .Property(e => e.UpdatedDate)
             .HasDefaultValueSql("current_timestamp");
-
+        builder.Entity<Order>()
+            .Property(e => e.ShippingStatusId)
+            .HasDefaultValue(1);
 
 
         builder.Entity<ProductPicture>()
@@ -63,17 +74,23 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
             .HasForeignKey(e => e.ProductId)
             .IsRequired();
 
-
-
-        builder.Entity<Order>()
-            .HasMany(e => e.Products)
-            .WithMany(e => e.Orders)
+        // order detail config
+        builder.Entity<Product>()
+            .HasMany(e => e.Orders)
+            .WithMany(e => e.Products)
             .UsingEntity<OrderDetail>();
 
-        builder.Entity<ShippingStatus>()
-            .HasOne(e => e.Order)
-            .WithOne();
 
+        builder.Entity<OrderDetail>()
+            .Property(e => e.Amount)
+            .HasDefaultValue(1);
+
+        // end order detail config
+
+        builder.Entity<ShippingStatus>()
+            .HasMany(e => e.Orders)
+            .WithOne(e => e.ShippingStatus)
+            .HasForeignKey(e => e.ShippingStatusId);
 
         builder.Entity<DkUser>()
             .HasMany(e => e.Orders)

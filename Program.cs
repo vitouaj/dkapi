@@ -1,6 +1,7 @@
 using dkapi;
 using dkapi.Data;
 using dkapi.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -23,7 +24,7 @@ var DB_NAME = Environment.GetEnvironmentVariable("DB_NAME");
 builder.Environment.EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 #pragma warning restore CS8601 // Possible null reference assignment.
 
-var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}";
+var connectionString = $"Host={DB_HOST}; Database={DB_NAME}; User Id={DB_USER}; Port={DB_PORT}; Password={DB_PASS}; Include Error Detail=true";
 
 builder.Services.AddDbContext<DkdbContext>(options =>
 {
@@ -90,5 +91,7 @@ app.UseAuthorization();
 
 ComputerEnpoints.Map(app);
 ProductEnpoints.Map(app);
+OrderEnpoint.Map(app);
+
 
 app.Run();

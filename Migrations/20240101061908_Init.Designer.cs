@@ -12,7 +12,7 @@ using dkapi.Data;
 namespace dkapi.Migrations
 {
     [DbContext(typeof(DkdbContext))]
-    [Migration("20231229180838_Init")]
+    [Migration("20240101061908_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -205,7 +205,7 @@ namespace dkapi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("dkapi.Models.Discount", b =>
@@ -300,24 +300,22 @@ namespace dkapi.Migrations
 
             modelBuilder.Entity("dkapi.Models.OrderDetail", b =>
                 {
-                    b.Property<int>("OrdersId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Amount")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("OrdersId", "ProductId");
+                    b.HasKey("OrderId", "ProductId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetail");
+                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("dkapi.Models.Product", b =>
@@ -362,14 +360,15 @@ namespace dkapi.Migrations
                         .HasDefaultValueSql("current_timestamp");
 
                     b.Property<int>("View")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("DiscountId")
-                        .IsUnique();
+                    b.HasIndex("DiscountId");
 
                     b.ToTable("Products");
                 });
@@ -429,7 +428,9 @@ namespace dkapi.Migrations
                         .HasDefaultValueSql("current_timestamp");
 
                     b.Property<int>("ShippingStatusId")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("text");
@@ -445,8 +446,7 @@ namespace dkapi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ShippingStatusId")
-                        .IsUnique();
+                    b.HasIndex("ShippingStatusId");
 
                     b.HasIndex("UserId");
 
@@ -506,17 +506,21 @@ namespace dkapi.Migrations
 
             modelBuilder.Entity("dkapi.Models.OrderDetail", b =>
                 {
-                    b.HasOne("dkapi.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrdersId")
+                    b.HasOne("dkapi.Order", "Order")
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("dkapi.Models.Product", null)
-                        .WithMany()
+                    b.HasOne("dkapi.Models.Product", "Product")
+                        .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("dkapi.Models.Product", b =>
@@ -527,13 +531,15 @@ namespace dkapi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("dkapi.Models.Discount", null)
-                        .WithOne()
-                        .HasForeignKey("dkapi.Models.Product", "DiscountId")
+                    b.HasOne("dkapi.Models.Discount", "Discount")
+                        .WithMany("Products")
+                        .HasForeignKey("DiscountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Discount");
                 });
 
             modelBuilder.Entity("dkapi.Models.ProductPicture", b =>
@@ -549,9 +555,9 @@ namespace dkapi.Migrations
 
             modelBuilder.Entity("dkapi.Order", b =>
                 {
-                    b.HasOne("dkapi.Models.ShippingStatus", null)
-                        .WithOne("Order")
-                        .HasForeignKey("dkapi.Order", "ShippingStatusId")
+                    b.HasOne("dkapi.Models.ShippingStatus", "ShippingStatus")
+                        .WithMany("Orders")
+                        .HasForeignKey("ShippingStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -561,10 +567,17 @@ namespace dkapi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("ShippingStatus");
+
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("dkapi.Models.Category", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("dkapi.Models.Discount", b =>
                 {
                     b.Navigation("Products");
                 });
@@ -576,13 +589,19 @@ namespace dkapi.Migrations
 
             modelBuilder.Entity("dkapi.Models.Product", b =>
                 {
+                    b.Navigation("OrderDetails");
+
                     b.Navigation("ProductPictures");
                 });
 
             modelBuilder.Entity("dkapi.Models.ShippingStatus", b =>
                 {
-                    b.Navigation("Order")
-                        .IsRequired();
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("dkapi.Order", b =>
+                {
+                    b.Navigation("OrderDetails");
                 });
 #pragma warning restore 612, 618
         }

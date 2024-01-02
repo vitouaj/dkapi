@@ -32,7 +32,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: dev
       PGADMIN_LISTEN_PORT: 80
     ports:
-      - "8009:80"
+      - "8007:80"
     networks:
       - devnet
 
