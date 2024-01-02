@@ -12,8 +12,8 @@ using dkapi.Data;
 namespace dkapi.Migrations
 {
     [DbContext(typeof(DkdbContext))]
-    [Migration("20240101061908_Init")]
-    partial class Init
+    [Migration("20240102085724_InitSchema")]
+    partial class InitSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

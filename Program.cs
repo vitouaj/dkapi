@@ -33,6 +33,8 @@ builder.Services.AddDbContext<DkdbContext>(options =>
 
 
 
+builder.Services.AddDbContext<DkdbContext>();
+
 builder.Services.AddIdentityApiEndpoints<DkUser>()
     .AddEntityFrameworkStores<DkdbContext>();
 builder.Services.AddAuthorizationBuilder();
@@ -77,13 +79,29 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetService<DkdbContext>();
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
         db.Database.Migrate();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        
+        var categories = new List<Category>(){
+        new Category{Name="gaming"},
+        new Category{Name="office"}
+        };
+
+        await db.Categories.AddRangeAsync(categories);
+
+        var discounts = new List<Discount>(){
+            new Discount{Name = "happy new year", Percentage=30},
+            new Discount{Name="lunar new year", Percentage=50}
+        };
+
+        await db.Discounts.AddRangeAsync(discounts);
+        
+        await db.SaveChangesAsync();
     }
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.UseHttpsRedirection();
 app.MapIdentityApi<DkUser>();
