@@ -3,17 +3,11 @@ services:
     image: postgres
     restart: always
     user: ${DB_USER}
-    # secrets:
-    #   - db-password
     volumes:
       - devdb-data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_PASSWORD: ${DB_PASS}
-      # - POSTGRES_USER=postgres
-      # - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
-    # expose:
-    #   - 5432
     ports:
       - 5500:5432
     healthcheck:
@@ -36,7 +30,19 @@ services:
     networks:
       - devnet
 
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
+    image: localstack/localstack:s3-latest
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+    environment:
+      - DEBUG=${DEBUG:-0}
+    volumes:   
+      - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
 volumes:
   devdb-data:
+
 networks:
   devnet:

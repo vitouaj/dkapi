@@ -1,5 +1,11 @@
-﻿using dkapi.Data;
+﻿using System.Net;
+using System.Net.Mime;
+using Amazon.S3;
+using Amazon.S3.Model;
+using dkapi.Data;
 using dkapi.Models;
+using Google.Cloud.Storage.V1;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 namespace dkapi;
@@ -76,6 +82,12 @@ public class ProductEnpoints
             await db.SaveChangesAsync();
             return Results.Created($"/newProduct/{newProduct.Id}", newProduct);
         });
+        // app.MapGet("/get-uploaded-images", async (IAmazonS3 s3cleint) => {
+        //     await s3cleint.GetAllObjectKeysAsync();
+        // });
+
+
+
     }
 
 }
