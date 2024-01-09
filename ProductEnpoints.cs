@@ -2,6 +2,7 @@
 using System.Net.Mime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using BrunoZell.ModelBinding;
 using dkapi.Data;
 using dkapi.Models;
 using Google.Cloud.Storage.V1;
@@ -51,18 +52,13 @@ public class ProductEnpoints
             return json;
         }).WithName("Search Product");
 
-
-
-        app.MapPost("/product", async (DkdbContext db, ProductDto pd) =>
+        app.MapPost("/product", async (DkdbContext db, string Brand, string Model, float Price, int CategoryId, int DiscountId, string? CreatedBy, string? UpdatedBy, IFormFileCollection files, IS3Service s3) =>
         {
-            if (pd == null)
-                return Results.BadRequest("record can't be empty");
-
             var hasProd = await db.Products
                 .Where(e =>
-                    e.Model.ToLower() == pd.Model.ToLower() &&
-                    e.Brand.ToLower() == pd.Brand.ToLower() &&
-                    e.Price == pd.Price
+                    e.Model.ToLower() == Model.ToLower() &&
+                    e.Brand.ToLower() == Brand.ToLower() &&
+                    e.Price == Price
                 ).AnyAsync();
 
             if (hasProd)
@@ -70,21 +66,29 @@ public class ProductEnpoints
 
             var newProduct = new Product
             {
-                Brand = pd.Brand,
-                Model = pd.Model,
-                Price = pd.Price,
-                CategoryId = pd.CategoryId,
-                DiscountId = pd.DiscountId,
-                CreatedBy = pd.CreatedBy,
-                UpdatedBy = pd.CreatedBy,
+                Brand = Brand,
+                Model = Model,
+                Price = Price,
+                CategoryId = CategoryId,
+                DiscountId = DiscountId,
+                CreatedBy = CreatedBy,
+                UpdatedBy = CreatedBy,
             };
+
+            foreach (var file in files)
+            {
+                var ImageKey = await s3.PutSingleImage(file);
+                var prodPic = new ProductPicture { ImageId = ImageKey};
+                newProduct.ProductPictures.Add(prodPic);
+            }
+
             await db.AddAsync(newProduct);
             await db.SaveChangesAsync();
-            return Results.Created($"/newProduct/{newProduct.Id}", newProduct);
-        });
-        // app.MapGet("/get-uploaded-images", async (IAmazonS3 s3cleint) => {
-        //     await s3cleint.GetAllObjectKeysAsync();
-        // });
+            return Results.Created();
+        }).DisableAntiforgery();
+
+
+
 
 
 
