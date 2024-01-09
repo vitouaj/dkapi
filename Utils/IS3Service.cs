@@ -4,7 +4,7 @@ namespace dkapi;
 
 public interface IS3Service
 {
-    Task<Stream> GetSingleImage(string bucketName, string key);
+    Task<Stream> GetSingleImage(string key);
     Task<string> PutSingleImage(IFormFile file);
     Task<List<string>> PutImagesToBucket(IFormFileCollection files);
 }

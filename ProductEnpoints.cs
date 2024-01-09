@@ -21,6 +21,31 @@ public class ProductEnpoints
             return Results.Ok(p);
         });
 
+        app.MapGet("/product/{productId}", async (DkdbContext db, int productId, IS3Service s3) => {
+    
+            var imageIds = await db.ProductPictures.Where(e => e.ProductId == productId).Select(e => e.ImageId).ToListAsync();
+            List<string> imageUrls = [];
+            foreach (var imageId in imageIds)
+            {
+                var stream = await s3.GetSingleImage(imageId);
+                using var bytearray = new MemoryStream();
+                await bytearray.CopyToAsync(stream);
+                var base64url = Convert.ToBase64String(bytearray.ToArray());
+                imageUrls.Add(base64url);
+            }
+            var product = await db.Products
+            .Select(p => new {
+                p.Id,
+                p.Brand,
+                p.Model,
+                p.Category.Name,
+                p.Price,
+                ProductPictures = imageUrls
+            })
+            .FirstOrDefaultAsync(p => p.Id == productId);
+            return product;
+        });
+
         app.MapGet("/product", async (DkdbContext db, string? keyword) =>
         {
             var prodKeyword = $"%{keyword}%";

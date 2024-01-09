@@ -16,8 +16,9 @@ public class S3Service : IS3Service
         configuration = _configuration;
     }
 
-    public async Task<Stream> GetSingleImage(string bucketName, string key)
+    public async Task<Stream> GetSingleImage(string key)
     {
+        var bucketName = configuration.GetSection("AWS").GetValue<string>("BucketName");
         var getObjectResponse = await client.GetObjectAsync(bucketName, key);
         using var responseStream = getObjectResponse.ResponseStream;
         var stream = new MemoryStream();
