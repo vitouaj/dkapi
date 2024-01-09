@@ -35,15 +35,13 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
         builder.Entity<Category>()
             .HasMany(e => e.Products)
             .WithOne(e => e.Category)
-            .HasForeignKey(e => e.CategoryId)
-            .IsRequired();
+            .HasForeignKey(e => e.CategoryId);
 
 
         builder.Entity<Product>()
             .HasOne(e => e.Discount)
             .WithMany(e => e.Products)
-            .HasForeignKey(e => e.DiscountId)
-            .IsRequired();
+            .HasForeignKey(e => e.DiscountId);
 
 
         builder.Entity<Product>()
@@ -71,8 +69,7 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
         builder.Entity<ProductPicture>()
             .HasOne(e => e.Product)
             .WithMany(e => e.ProductPictures)
-            .HasForeignKey(e => e.ProductId)
-            .IsRequired();
+            .HasForeignKey(e => e.ProductId);
 
         // order detail config
         builder.Entity<Product>()
