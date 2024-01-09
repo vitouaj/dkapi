@@ -1,12 +1,7 @@
-﻿using System.Net;
-using System.Net.Mime;
-using Amazon.S3;
+﻿using Amazon.S3;
 using Amazon.S3.Model;
-using BrunoZell.ModelBinding;
 using dkapi.Data;
 using dkapi.Models;
-using Google.Cloud.Storage.V1;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 namespace dkapi;
@@ -21,17 +16,21 @@ public class ProductEnpoints
             return Results.Ok(p);
         });
 
-        app.MapGet("/product/{productId}", async (DkdbContext db, int productId, IS3Service s3) => {
+        app.MapGet("/product/{productId}", async (DkdbContext db, int productId, IAmazonS3 s3) => {
     
             var imageIds = await db.ProductPictures.Where(e => e.ProductId == productId).Select(e => e.ImageId).ToListAsync();
             List<string> imageUrls = [];
-            foreach (var imageId in imageIds)
+            foreach (var key in imageIds)
             {
-                var stream = await s3.GetSingleImage(imageId);
-                using var bytearray = new MemoryStream();
-                await bytearray.CopyToAsync(stream);
-                var base64url = Convert.ToBase64String(bytearray.ToArray());
-                imageUrls.Add(base64url);
+                var preSignUrlRequest = new GetPreSignedUrlRequest
+                {
+                    Key = key,
+                    Expires = DateTime.UtcNow.AddHours(1),
+                    BucketName = app.Configuration.GetSection("AWS").GetValue<string>("BucketName")
+                };
+
+                var url = await s3.GetPreSignedURLAsync(preSignUrlRequest);
+                imageUrls.Add(url);
             }
             var product = await db.Products
             .Select(p => new {
@@ -111,12 +110,5 @@ public class ProductEnpoints
             await db.SaveChangesAsync();
             return Results.Created();
         }).DisableAntiforgery();
-
-
-
-
-
-
     }
-
 }

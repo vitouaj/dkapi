@@ -1,7 +1,4 @@
-using Amazon.Runtime;
 using Amazon.S3;
-using Amazon.S3.Model;
-using Amazon.S3.Util;
 using dkapi;
 using dkapi.Data;
 using dkapi.Models;
@@ -37,14 +34,16 @@ builder.Services.AddIdentityApiEndpoints<DkUser>()
     .AddEntityFrameworkStores<DkdbContext>();
 builder.Services.AddAuthorizationBuilder();
 
+
 // configure aws s3 bucket
 var awsConfig = builder.Configuration.GetSection("AWS");
+var serviceUrl = awsConfig.GetValue<string>("ServiceURL");
 var s3config = new AmazonS3Config
 {
-    ServiceURL = awsConfig.GetValue<string>("ServiceURL"),
     RegionEndpoint = Amazon.RegionEndpoint.USEast1,
-    ForcePathStyle = true
+    ForcePathStyle = true,
 };
+s3config.ServiceURL = serviceUrl;
 builder.Services.AddSingleton<IAmazonS3>(svp => new AmazonS3Client(
     awsConfig.GetValue<string>("AwsAccessKey"),
     awsConfig.GetValue<string>("AwsSecretKey"),
