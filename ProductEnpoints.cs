@@ -13,11 +13,11 @@ public class ProductEnpoints
         app.MapGet("/products", async (DkdbContext db) =>
         {
             var p = await db.Products.ToListAsync();
-            return Results.Ok(p);
+            return p;
         });
 
-        app.MapGet("/product/{productId}", async (DkdbContext db, int productId, IAmazonS3 s3) => {
-    
+        app.MapGet("/product/{productId}", async (DkdbContext db, int productId, IAmazonS3 s3) =>
+        {
             var imageIds = await db.ProductPictures.Where(e => e.ProductId == productId).Select(e => e.ImageId).ToListAsync();
             List<string> imageUrls = [];
             foreach (var key in imageIds)
@@ -33,7 +33,8 @@ public class ProductEnpoints
                 imageUrls.Add(url);
             }
             var product = await db.Products
-            .Select(p => new {
+            .Select(p => new
+            {
                 p.Id,
                 p.Brand,
                 p.Model,
@@ -102,7 +103,7 @@ public class ProductEnpoints
             foreach (var file in files)
             {
                 var ImageKey = await s3.PutSingleImage(file);
-                var prodPic = new ProductPicture { ImageId = ImageKey};
+                var prodPic = new ProductPicture { ImageId = ImageKey };
                 newProduct.ProductPictures.Add(prodPic);
             }
 
@@ -110,5 +111,17 @@ public class ProductEnpoints
             await db.SaveChangesAsync();
             return Results.Created();
         }).DisableAntiforgery();
+
+
+        app.MapDelete("/product/{productID}", async (DkdbContext db, int productId) =>
+        {
+            var pd = await db.Products.Where(e => e.Id == productId).FirstOrDefaultAsync();
+            if (pd == null)
+                return Results.BadRequest("product not found");
+
+            db.Products.Remove(pd);
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+        });
     }
 }

@@ -103,11 +103,14 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
-// app.MapIdentityApi<DkUser>();
+app.MapIdentityApi<DkUser>();
 app.UseAuthorization();
 
 // ComputerEnpoints.Map(app);
 ProductEnpoints.Map(app);
-// OrderEnpoint.Map(app);
+OrderEnpoint.Map(app);
+
+
+
 
 app.Run();

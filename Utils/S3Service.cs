@@ -87,4 +87,33 @@ public class S3Service : IS3Service
         }
         return result;
     }
+
+    public async Task<string> PutProfileImage(IFormFile file)
+    {
+        var awsConfig = configuration.GetSection("AWS");
+        var objectName = DateTime.Now.ToString("yyyyMMddhhmmss") + file.FileName.ToLower();
+        var bucketName = awsConfig.GetValue<string>("BucketName");
+        var folderName = awsConfig.GetValue<string>("Folder");
+        bool bucketExist = await AmazonS3Util.DoesS3BucketExistV2Async(client, bucketName);
+        if (!bucketExist)
+        {
+            var bucketRequest = new PutBucketRequest
+            {
+                BucketName = bucketName,
+                UseClientRegion = true,
+            };
+            await client.PutBucketAsync(bucketRequest);
+        }
+        var request = new PutObjectRequest
+        {
+            BucketName = bucketName,
+            Key = folderName + "/" + objectName,
+            InputStream = file.OpenReadStream(),
+            ContentType = file.ContentType
+        };
+        var response = await client.PutObjectAsync(request);
+        if (response.HttpStatusCode == HttpStatusCode.OK)
+            return objectName;
+        return string.Empty;
+    }
 }

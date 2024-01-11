@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using dkapi.Data;
@@ -11,9 +12,11 @@ using dkapi.Data;
 namespace dkapi.Migrations
 {
     [DbContext(typeof(DkdbContext))]
-    partial class DkdbContextModelSnapshot : ModelSnapshot
+    [Migration("20240110033514_UsernameAddress")]
+    partial class UsernameAddress
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -247,12 +250,6 @@ namespace dkapi.Migrations
                     b.Property<int>("EmailConfirmed")
                         .HasColumnType("integer");
 
-                    b.Property<string>("FirstName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
                     b.Property<int>("LockoutEnabled")
                         .HasColumnType("integer");
 
@@ -294,6 +291,9 @@ namespace dkapi.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

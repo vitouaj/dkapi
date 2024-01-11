@@ -29,9 +29,6 @@ class DkdbContext(DbContextOptions<DkdbContext> options) : IdentityDbContext<DkU
             .Property(c => c.Id)
             .HasColumnType("uuid");
 
-
-
-
         builder.Entity<Category>()
             .HasMany(e => e.Products)
             .WithOne(e => e.Category)
